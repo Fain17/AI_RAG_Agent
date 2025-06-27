@@ -1,0 +1,161 @@
+basePath: /
+definitions:
+  models.FileUploadRequest:
+    properties:
+      content:
+        type: string
+      embedding:
+        items:
+          type: number
+        type: array
+      filename:
+        type: string
+    type: object
+  models.SearchRequest:
+    properties:
+      limit:
+        type: integer
+      query_embedding:
+        items:
+          type: number
+        type: array
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API for storing and searching embedded files
+  title: RAG File Service API
+  version: "1.0"
+paths:
+  /files:
+    post:
+      consumes:
+      - application/json
+      description: Store a file and its embedding vector
+      parameters:
+      - description: Upload Input
+        in: body
+        name: file
+        required: true
+        schema:
+          $ref: '#/definitions/models.FileUploadRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.FileUploadRequest'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Upload a file
+      tags:
+      - files
+  /files/{id}:
+    delete:
+      parameters:
+      - description: File ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a file
+      tags:
+      - files
+    get:
+      parameters:
+      - description: File ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.FileUploadRequest'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get file by ID
+      tags:
+      - files
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: File ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update Input
+        in: body
+        name: file
+        required: true
+        schema:
+          $ref: '#/definitions/models.FileUploadRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.FileUploadRequest'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update a file
+      tags:
+      - files
+  /search:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Search Query
+        in: body
+        name: query
+        required: true
+        schema:
+          $ref: '#/definitions/models.SearchRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SearchRequest'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Search similar files
+      tags:
+      - search
+schemes:
+- http
+swagger: "2.0"

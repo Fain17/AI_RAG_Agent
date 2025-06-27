@@ -1,0 +1,38 @@
+# Dependency directories
+vendor/
+node_modules/
+
+# Build artifacts
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+server
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Git & IDE
+.git
+.gitignore
+.vscode/
+.idea/
+
+# Environment
+.env
+.env.*
+*.env
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+*.bak
+
+# Docker stuff
+Dockerfile*
+docker-compose.yml
+*.tar

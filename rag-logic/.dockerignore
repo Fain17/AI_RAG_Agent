@@ -1,0 +1,43 @@
+# Byte-compiled / cached files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# IDE configs
+.vscode/
+.idea/
+
+# Git and metadata
+.git/
+.gitignore
+*.swp
+
+# OS trash
+.DS_Store
+Thumbs.db
+
+# Local secrets, creds
+*.env
+*.pem
+*.key
+*.crt
+secrets.*
+
+# Logs
+*.log
+
+# Compiled files
+*.so
+*.o
+*.a
+
+# Jupyter stuff (if you do crimes)
+.ipynb_checkpoints/
+
+# Docker trash
+Dockerfile~
