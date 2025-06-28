@@ -7,15 +7,17 @@ on:
     paths:
       - 'rag-backend/**'
 
+permissions:
+  contents: read
+  packages: write  # Required to push to GHCR
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
     environment: develop  # 🔹 This links to the GitHub Environment named 'develop'
 
-    permissions:
-      contents: read
-      packages: write  # Required to push to GHCR
+
 
     steps:
       - name: Checkout code
