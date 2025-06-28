@@ -28,8 +28,8 @@ jobs:
         run: |
           docker build \
             --build-arg DATABASE_URL="${{ secrets.DATABASE_URL }}" \
-            -t ghcr.io/fain17/ai_sql_agent/rag-logic:dev \
+            -t ghcr.io/fain17/ai_rag_agent/rag-logic:dev \
             ./rag-logic
 
       - name: Push Docker image to GHCR
-        run: docker push ghcr.io/fain17/ai_sql_agent/rag-logic:dev
+        run: docker push ghcr.io/fain17/ai_rag_agent/rag-logic:dev
