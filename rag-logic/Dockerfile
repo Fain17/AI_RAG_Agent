@@ -4,9 +4,7 @@ FROM python:3.12-alpine
 WORKDIR /app
 
 # Install system dependencies (for pdfminer and model ops)
-RUN apt-get update && apt-get install -y \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache gcc g++ musl-dev libffi-dev
 
 # Copy requirements
 COPY requirements.txt .
