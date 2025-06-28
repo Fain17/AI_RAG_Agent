@@ -35,12 +35,16 @@ Generate sentence embedding for a given string.
 ```json
 
 {
-  "embedding": [0.123, -0.456, ..., 0.789]  // 384-dimensional float array
+  "embedding": [0.123, -0.456, 0.789, ...]   // 384-dimensional float array
 }
 
 ```
 
-####  🔸 Docker Command
+####  🔸 Docker pull and run Command - Docker images can be found in packages
+
+```
+docker pull ghcr.io/fain17/ai_rag_agent/rag-embedding-service:dev
+```
 
 ```
 docker run -p 8000:8000 rag-embedding-service:dev
