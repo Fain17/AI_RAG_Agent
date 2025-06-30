@@ -1,24 +1,30 @@
 basePath: /
 definitions:
+  models.FileMetadata:
+    properties:
+      created_at:
+        type: string
+      filename:
+        type: string
+      id:
+        type: string
+      size:
+        type: integer
+    type: object
   models.FileUploadRequest:
     properties:
       content:
         type: string
+      created_at:
+        type: string
+      deleted:
+        type: boolean
       embedding:
         items:
           type: number
         type: array
       filename:
         type: string
-    type: object
-  models.SearchRequest:
-    properties:
-      limit:
-        type: integer
-      query_embedding:
-        items:
-          type: number
-        type: array
     type: object
 host: localhost:8080
 info:
@@ -28,6 +34,25 @@ info:
   version: "1.0"
 paths:
   /files:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.FileUploadRequest'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all files
+      tags:
+      - files
     post:
       consumes:
       - application/json
@@ -129,33 +154,178 @@ paths:
       summary: Update a file
       tags:
       - files
-  /search:
-    post:
-      consumes:
-      - application/json
+  /files/date-range:
+    get:
       parameters:
-      - description: Search Query
-        in: body
-        name: query
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: start
         required: true
-        schema:
-          $ref: '#/definitions/models.SearchRequest'
+        type: string
+      - description: End date (YYYY-MM-DD)
+        in: query
+        name: end
+        required: true
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.SearchRequest'
+            items:
+              $ref: '#/definitions/models.FileUploadRequest'
+            type: array
         "400":
           description: Bad Request
           schema:
             additionalProperties:
               type: string
             type: object
-      summary: Search similar files
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get files within a date range
       tags:
-      - search
+      - files
+  /files/metadata:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.FileMetadata'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get lightweight file metadata
+      tags:
+      - files
+  /files/recycle-bin:
+    get:
+      description: Retrieves files that have been soft-deleted (Recycle Bin).
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.FileUploadRequest'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all soft-deleted files
+      tags:
+      - files
+  /files/restore/{id}:
+    patch:
+      description: Sets the file's deleted flag back to false.
+      parameters:
+      - description: File UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Restore a soft-deleted file
+      tags:
+      - files
+  /files/search:
+    get:
+      parameters:
+      - description: Search keyword
+        in: query
+        name: query
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.FileUploadRequest'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Search files by filename
+      tags:
+      - files
+  /files/soft-delete/{id}:
+    delete:
+      description: Marks a file as deleted without removing it from the database.
+      parameters:
+      - description: File UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Soft delete a file
+      tags:
+      - files
 schemes:
 - http
 swagger: "2.0"
