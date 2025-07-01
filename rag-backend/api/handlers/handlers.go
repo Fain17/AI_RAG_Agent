@@ -57,7 +57,7 @@ func GetHandler(q *db.Queries) gin.HandlerFunc {
 //
 //	@Success		200	{array}	models.FileUploadRequest
 //	@Failure		500	{object}	map[string]string
-//	@Router			/files [get]
+//	@Router			/files/getall [get]
 func GetAllHandler(q *db.Queries) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		files, err := q.GetAllFiles(c)
@@ -158,7 +158,7 @@ func GetFilesByDateRangeHandler(q *db.Queries) gin.HandlerFunc {
 // @Success 200 {object} models.FileUploadRequest
 //
 //	@Failure		400		{object}	map[string]string
-//	@Router			/files [post]
+//	@Router			/files/upload [post]
 func UploadHandler(q *db.Queries) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
@@ -276,7 +276,7 @@ func UpdateHandler(q *db.Queries) gin.HandlerFunc {
 //	@Success		200	{object}	map[string]string
 //	@Failure		400	{object}	map[string]string
 //	@Failure		500	{object}	map[string]string
-//	@Router			/files/soft-delete/{id} [delete]
+//	@Router			/files/{id}/soft-delete [patch]
 func SoftDeleteHandler(q *db.Queries) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idParam := c.Param("id")
@@ -312,7 +312,7 @@ func SoftDeleteHandler(q *db.Queries) gin.HandlerFunc {
 //	@Success		200	{object}	map[string]string
 //	@Failure		400	{object}	map[string]string
 //	@Failure		500	{object}	map[string]string
-//	@Router			/files/restore/{id} [patch]
+//	@Router			/files/{id}/restore [patch]
 func UndoSoftDeleteHandler(q *db.Queries) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idParam := c.Param("id")

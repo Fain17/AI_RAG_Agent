@@ -33,53 +33,6 @@ info:
   title: RAG File Service API
   version: "1.0"
 paths:
-  /files:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/models.FileUploadRequest'
-            type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get all files
-      tags:
-      - files
-    post:
-      consumes:
-      - application/json
-      description: Store a file and its embedding vector
-      parameters:
-      - description: Upload Input
-        in: body
-        name: file
-        required: true
-        schema:
-          $ref: '#/definitions/models.FileUploadRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.FileUploadRequest'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Upload a file
-      tags:
-      - files
   /files/{id}:
     delete:
       parameters:
@@ -154,6 +107,68 @@ paths:
       summary: Update a file
       tags:
       - files
+  /files/{id}/restore:
+    patch:
+      description: Sets the file's deleted flag back to false.
+      parameters:
+      - description: File UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Restore a soft-deleted file
+      tags:
+      - files
+  /files/{id}/soft-delete:
+    patch:
+      description: Marks a file as deleted without removing it from the database.
+      parameters:
+      - description: File UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Soft delete a file
+      tags:
+      - files
   /files/date-range:
     get:
       parameters:
@@ -189,6 +204,26 @@ paths:
               type: string
             type: object
       summary: Get files within a date range
+      tags:
+      - files
+  /files/getall:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.FileUploadRequest'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all files
       tags:
       - files
   /files/metadata:
@@ -232,37 +267,6 @@ paths:
       summary: Get all soft-deleted files
       tags:
       - files
-  /files/restore/{id}:
-    patch:
-      description: Sets the file's deleted flag back to false.
-      parameters:
-      - description: File UUID
-        in: path
-        name: id
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Restore a soft-deleted file
-      tags:
-      - files
   /files/search:
     get:
       parameters:
@@ -295,35 +299,32 @@ paths:
       summary: Search files by filename
       tags:
       - files
-  /files/soft-delete/{id}:
-    delete:
-      description: Marks a file as deleted without removing it from the database.
+  /files/upload:
+    post:
+      consumes:
+      - application/json
+      description: Store a file and its embedding vector
       parameters:
-      - description: File UUID
-        in: path
-        name: id
+      - description: Upload Input
+        in: body
+        name: file
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/models.FileUploadRequest'
+      produces:
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/models.FileUploadRequest'
         "400":
           description: Bad Request
           schema:
             additionalProperties:
               type: string
             type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Soft delete a file
+      summary: Upload a file
       tags:
       - files
 schemes:

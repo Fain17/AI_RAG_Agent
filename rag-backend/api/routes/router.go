@@ -20,15 +20,15 @@ func NewRouter(queries *db.Queries) *gin.Engine {
 	fileGroup := r.Group("/files")
 
 	// CRUD + search routes
-	fileGroup.POST("/", handlers.UploadHandler(queries))
-	fileGroup.GET("/", handlers.GetAllHandler(queries))
+	fileGroup.POST("/upload", handlers.UploadHandler(queries))
+	fileGroup.GET("/getall", handlers.GetAllHandler(queries))
 	fileGroup.GET("/search", handlers.GetFilesByFilenameHandler(queries))
 	fileGroup.GET("/date-range", handlers.GetFilesByDateRangeHandler(queries))
 	fileGroup.GET("/:id", handlers.GetHandler(queries))
 	fileGroup.PUT("/:id", handlers.UpdateHandler(queries))
 	fileGroup.DELETE("/:id", handlers.DeleteHandler(queries))
-	fileGroup.PATCH("/:id/delete", handlers.SoftDeleteHandler(queries))
-	fileGroup.PATCH("/restore/:id", handlers.UndoSoftDeleteHandler(queries))
+	fileGroup.PATCH("/:id/soft-delete", handlers.SoftDeleteHandler(queries))
+	fileGroup.PATCH("/:id/restore", handlers.UndoSoftDeleteHandler(queries))
 	fileGroup.GET("/recycle-bin", handlers.GetDeletedFilesHandler(queries))
 	fileGroup.GET("/metadata", handlers.GetFileMetadataHandler(queries))
 
