@@ -26,7 +26,7 @@ async def upload_file_service(file: UploadFile = File(...)):
         }
 
         async with httpx.AsyncClient() as client:
-            resp = await client.post(f"{GO_BACKEND_URL}/files", json=payload)
+            resp = await client.post(f"{GO_BACKEND_URL}/files/upload", json=payload)
             resp.raise_for_status()
             return resp.json()
 
@@ -44,6 +44,43 @@ async def delete_file_service(file_id: str):
             raise HTTPException(status_code=resp.status_code, detail="Failed to delete file.")
     except httpx.RequestError as e:
         raise HTTPException(status_code=500, detail=f"Connection error: {str(e)}")
+
+async def soft_delete_file_service(file_id: str):
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.patch(
+                f"{GO_BACKEND_URL}/files/{file_id}/soft-delete",
+                json={"deleted": True}
+            )
+            if resp.status_code == 200:
+                return {"message": f"File {file_id} soft-deleted successfully."}
+            raise HTTPException(status_code=resp.status_code, detail="Failed to soft-delete file.")
+    except httpx.RequestError as e:
+        raise HTTPException(status_code=500, detail=f"Connection error: {str(e)}")
+    
+async def restore_file_service(file_id: str):
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.patch(
+                f"{GO_BACKEND_URL}/files/{file_id}/restore",
+                json={"deleted": False}
+            )
+            if resp.status_code == 200:
+                return {"message": f"File {file_id} restored successfully."}
+            raise HTTPException(status_code=resp.status_code, detail="Failed to restore file.")
+    except httpx.RequestError as e:
+        raise HTTPException(status_code=500, detail=f"Connection error: {str(e)}")
+    
+async def get_soft_deleted_files_service():
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(f"{GO_BACKEND_URL}/files/recycle-bin")
+            if resp.status_code == 200:
+                return resp.json()
+            raise HTTPException(status_code=resp.status_code, detail="Failed to retrieve soft-deleted files.")
+    except httpx.RequestError as e:
+        raise HTTPException(status_code=500, detail=f"Connection error: {str(e)}")
+
 
 
 async def update_file_service(file_id: str, file: UploadFile):
