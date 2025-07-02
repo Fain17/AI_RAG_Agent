@@ -17,6 +17,10 @@ const docTemplate = `{
     "paths": {
         "/files/date-range": {
             "get": {
+                "description": "Retrieves files created within the specified date range. Both start and end dates are inclusive.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -27,14 +31,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Start date (YYYY-MM-DD)",
+                        "description": "Start date in YYYY-MM-DD format (e.g., 2024-01-01)",
                         "name": "start",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "End date (YYYY-MM-DD)",
+                        "description": "End date in YYYY-MM-DD format (e.g., 2024-12-31)",
                         "name": "end",
                         "in": "query",
                         "required": true
@@ -42,7 +46,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Files created within the date range",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -51,21 +55,17 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid date format",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "additionalProperties": true
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Failed to retrieve files by date",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -73,6 +73,10 @@ const docTemplate = `{
         },
         "/files/getall": {
             "get": {
+                "description": "Retrieves all files from the database. Returns a list of all files with their content and embeddings.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -82,7 +86,7 @@ const docTemplate = `{
                 "summary": "Get all files",
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "List of all files",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -90,13 +94,18 @@ const docTemplate = `{
                             }
                         }
                     },
-                    "500": {
-                        "description": "Internal Server Error",
+                    "404": {
+                        "description": "No files found",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -104,6 +113,10 @@ const docTemplate = `{
         },
         "/files/metadata": {
             "get": {
+                "description": "Retrieves lightweight metadata for all files including ID, filename, size, and creation date. Does not include file content or embeddings for performance.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -113,7 +126,7 @@ const docTemplate = `{
                 "summary": "Get lightweight file metadata",
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "List of file metadata",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -122,12 +135,10 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Failed to get metadata",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -135,7 +146,10 @@ const docTemplate = `{
         },
         "/files/recycle-bin": {
             "get": {
-                "description": "Retrieves files that have been soft-deleted (Recycle Bin).",
+                "description": "Retrieves all files that have been soft-deleted (moved to recycle bin). These files can be restored or permanently deleted.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -145,7 +159,7 @@ const docTemplate = `{
                 "summary": "Get all soft-deleted files",
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "List of soft-deleted files",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -154,12 +168,10 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Failed to fetch deleted files",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -167,6 +179,10 @@ const docTemplate = `{
         },
         "/files/search": {
             "get": {
+                "description": "Searches for files whose filename contains the specified query string. Case-sensitive search.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -177,7 +193,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Search keyword",
+                        "description": "Search keyword to match in filename (e.g., 'document', 'report')",
                         "name": "query",
                         "in": "query",
                         "required": true
@@ -185,7 +201,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Files matching the search query",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -194,21 +210,17 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Query parameter is required",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "additionalProperties": true
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Search operation failed",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -216,7 +228,7 @@ const docTemplate = `{
         },
         "/files/upload": {
             "post": {
-                "description": "Store a file and its embedding vector",
+                "description": "Stores a new file with its content and embedding vector. The embedding should be a vector representation of the file content for similarity search.",
                 "consumes": [
                     "application/json"
                 ],
@@ -229,7 +241,7 @@ const docTemplate = `{
                 "summary": "Upload a file",
                 "parameters": [
                     {
-                        "description": "Upload Input",
+                        "description": "File data including filename, content, and embedding vector",
                         "name": "file",
                         "in": "body",
                         "required": true,
@@ -240,18 +252,23 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "File uploaded successfully",
                         "schema": {
                             "$ref": "#/definitions/models.FileUploadRequest"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid request body",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to create file",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -259,6 +276,10 @@ const docTemplate = `{
         },
         "/files/{id}": {
             "get": {
+                "description": "Retrieves a specific file by its UUID. Returns the complete file data including content and embedding vector.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -268,8 +289,8 @@ const docTemplate = `{
                 "summary": "Get file by ID",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "File ID",
+                        "type": "string",
+                        "description": "File UUID (e.g., 550e8400-e29b-41d4-a716-446655440000)",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -277,23 +298,36 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "File data retrieved successfully",
                         "schema": {
                             "$ref": "#/definitions/models.FileUploadRequest"
                         }
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "400": {
+                        "description": "Invalid UUID format",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "File not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 }
             },
             "put": {
+                "description": "Updates an existing file's content, filename, and embedding vector. All fields in the request body will replace the existing values.",
                 "consumes": [
                     "application/json"
                 ],
@@ -306,14 +340,14 @@ const docTemplate = `{
                 "summary": "Update a file",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "File ID",
+                        "type": "string",
+                        "description": "File UUID to update",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Update Input",
+                        "description": "Updated file data",
                         "name": "file",
                         "in": "body",
                         "required": true,
@@ -324,31 +358,43 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "File updated successfully",
                         "schema": {
                             "$ref": "#/definitions/models.FileUploadRequest"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid UUID or request body",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Update operation failed",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 }
             },
             "delete": {
+                "description": "Permanently removes a file from the database. This action cannot be undone.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
                 "tags": [
                     "files"
                 ],
-                "summary": "Delete a file",
+                "summary": "Delete a file permanently",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "File ID",
+                        "type": "string",
+                        "description": "File UUID to delete",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -356,15 +402,20 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "204": {
-                        "description": "No Content"
+                        "description": "File deleted successfully"
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid UUID format",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Delete operation failed",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -372,7 +423,13 @@ const docTemplate = `{
         },
         "/files/{id}/restore": {
             "patch": {
-                "description": "Sets the file's deleted flag back to false.",
+                "description": "Restores a previously soft-deleted file by setting its deleted flag back to false. The file becomes available again.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
                 "tags": [
                     "files"
                 ],
@@ -380,7 +437,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "File UUID",
+                        "description": "File UUID to restore",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -388,30 +445,24 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "File restored successfully",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid UUID format",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "additionalProperties": true
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Restore operation failed",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -419,7 +470,13 @@ const docTemplate = `{
         },
         "/files/{id}/soft-delete": {
             "patch": {
-                "description": "Marks a file as deleted without removing it from the database.",
+                "description": "Marks a file as deleted without removing it from the database. The file can be restored later using the restore endpoint.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
                 "tags": [
                     "files"
                 ],
@@ -427,7 +484,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "File UUID",
+                        "description": "File UUID to soft delete",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -435,30 +492,24 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "File soft-deleted successfully",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid UUID format",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "additionalProperties": true
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Soft delete operation failed",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -467,6 +518,7 @@ const docTemplate = `{
     },
     "definitions": {
         "models.FileMetadata": {
+            "description": "Lightweight file metadata for performance-optimized queries",
             "type": "object",
             "properties": {
                 "created_at": {

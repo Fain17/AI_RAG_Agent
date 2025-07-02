@@ -15,15 +15,17 @@ import (
 
 // GetHandler godoc
 //
-//	@Summary	Get file by ID
-//	@Tags		files
-//	@Produce	json
-//	@Param		id	path		int	true	"File ID"
-//
-// @Success 200 {object} models.FileUploadRequest
-//
-//	@Failure	404	{object}	map[string]string
-//	@Router		/files/{id} [get]
+//	@Summary		Get file by ID
+//	@Description	Retrieves a specific file by its UUID. Returns the complete file data including content and embedding vector.
+//	@Tags			files
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"File UUID (e.g., 550e8400-e29b-41d4-a716-446655440000)"
+//	@Success		200	{object}	models.FileUploadRequest	"File data retrieved successfully"
+//	@Failure		400	{object}	map[string]interface{}	"Invalid UUID format"
+//	@Failure		404	{object}	map[string]interface{}	"File not found"
+//	@Failure		500	{object}	map[string]interface{}	"Internal server error"
+//	@Router			/files/{id} [get]
 func GetHandler(q *db.Queries) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
@@ -52,11 +54,13 @@ func GetHandler(q *db.Queries) gin.HandlerFunc {
 // GetAllHandler godoc
 //
 //	@Summary		Get all files
+//	@Description	Retrieves all files from the database. Returns a list of all files with their content and embeddings.
 //	@Tags			files
+//	@Accept			json
 //	@Produce		json
-//
-//	@Success		200	{array}	models.FileUploadRequest
-//	@Failure		500	{object}	map[string]string
+//	@Success		200	{array}	models.FileUploadRequest	"List of all files"
+//	@Failure		404	{object}	map[string]interface{}	"No files found"
+//	@Failure		500	{object}	map[string]interface{}	"Internal server error"
 //	@Router			/files/getall [get]
 func GetAllHandler(q *db.Queries) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -72,14 +76,16 @@ func GetAllHandler(q *db.Queries) gin.HandlerFunc {
 
 // GetFilesByFilenameHandler godoc
 //
-//	@Summary	Search files by filename
-//	@Tags		files
-//	@Produce	json
-//	@Param		query	query	string	true	"Search keyword"
-//	@Success	200		{array}	models.FileUploadRequest
-//	@Failure	400		{object}	map[string]string
-//	@Failure	500		{object}	map[string]string
-//	@Router		/files/search [get]
+//	@Summary		Search files by filename
+//	@Description	Searches for files whose filename contains the specified query string. Case-sensitive search.
+//	@Tags			files
+//	@Accept			json
+//	@Produce		json
+//	@Param			query	query		string	true	"Search keyword to match in filename (e.g., 'document', 'report')"
+//	@Success		200		{array}		models.FileUploadRequest	"Files matching the search query"
+//	@Failure		400		{object}	map[string]interface{}	"Query parameter is required"
+//	@Failure		500		{object}	map[string]interface{}	"Search operation failed"
+//	@Router			/files/search [get]
 func GetFilesByFilenameHandler(q *db.Queries) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		query := c.Query("query")
@@ -100,15 +106,17 @@ func GetFilesByFilenameHandler(q *db.Queries) gin.HandlerFunc {
 
 // GetFilesByDateRangeHandler godoc
 //
-//	@Summary	Get files within a date range
-//	@Tags		files
-//	@Produce	json
-//	@Param		start	query	string	true	"Start date (YYYY-MM-DD)"
-//	@Param		end		query	string	true	"End date (YYYY-MM-DD)"
-//	@Success	200		{array}	models.FileUploadRequest
-//	@Failure	400		{object}	map[string]string
-//	@Failure	500		{object}	map[string]string
-//	@Router		/files/date-range [get]
+//	@Summary		Get files within a date range
+//	@Description	Retrieves files created within the specified date range. Both start and end dates are inclusive.
+//	@Tags			files
+//	@Accept			json
+//	@Produce		json
+//	@Param			start	query		string	true	"Start date in YYYY-MM-DD format (e.g., 2024-01-01)"
+//	@Param			end		query		string	true	"End date in YYYY-MM-DD format (e.g., 2024-12-31)"
+//	@Success		200		{array}		models.FileUploadRequest	"Files created within the date range"
+//	@Failure		400		{object}	map[string]interface{}	"Invalid date format"
+//	@Failure		500		{object}	map[string]interface{}	"Failed to retrieve files by date"
+//	@Router			/files/date-range [get]
 func GetFilesByDateRangeHandler(q *db.Queries) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := c.Query("start")
@@ -149,15 +157,14 @@ func GetFilesByDateRangeHandler(q *db.Queries) gin.HandlerFunc {
 // UploadHandler godoc
 //
 //	@Summary		Upload a file
-//	@Description	Store a file and its embedding vector
+//	@Description	Stores a new file with its content and embedding vector. The embedding should be a vector representation of the file content for similarity search.
 //	@Tags			files
 //	@Accept			json
 //	@Produce		json
-//	@Param			file	body   models.FileUploadRequest true "Upload Input"
-//
-// @Success 200 {object} models.FileUploadRequest
-//
-//	@Failure		400		{object}	map[string]string
+//	@Param			file	body		models.FileUploadRequest	true	"File data including filename, content, and embedding vector"
+//	@Success		200		{object}	models.FileUploadRequest	"File uploaded successfully"
+//	@Failure		400		{object}	map[string]interface{}	"Invalid request body"
+//	@Failure		500		{object}	map[string]interface{}	"Failed to create file"
 //	@Router			/files/upload [post]
 func UploadHandler(q *db.Queries) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -186,12 +193,16 @@ func UploadHandler(q *db.Queries) gin.HandlerFunc {
 
 // DeleteHandler godoc
 //
-//	@Summary	Delete a file
-//	@Tags		files
-//	@Param		id	path		int	true	"File ID"
-//	@Success	204	{object}	nil
-//	@Failure	400	{object}	map[string]string
-//	@Router		/files/{id} [delete]
+//	@Summary		Delete a file permanently
+//	@Description	Permanently removes a file from the database. This action cannot be undone.
+//	@Tags			files
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"File UUID to delete"
+//	@Success		204	{object}	nil	"File deleted successfully"
+//	@Failure		400	{object}	map[string]interface{}	"Invalid UUID format"
+//	@Failure		500	{object}	map[string]interface{}	"Delete operation failed"
+//	@Router			/files/{id} [delete]
 func DeleteHandler(q *db.Queries) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
@@ -219,17 +230,17 @@ func DeleteHandler(q *db.Queries) gin.HandlerFunc {
 
 // UpdateHandler godoc
 //
-//	@Summary	Update a file
-//	@Tags		files
-//	@Accept		json
-//	@Produce	json
-//	@Param		id		path		int																true	"File ID"
-//	@Param		file	body		models.FileUploadRequest true "Update Input"
-//
-// @Success 200 {object} models.FileUploadRequest
-//
-//	@Failure	400		{object}	map[string]string
-//	@Router		/files/{id} [put]
+//	@Summary		Update a file
+//	@Description	Updates an existing file's content, filename, and embedding vector. All fields in the request body will replace the existing values.
+//	@Tags			files
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		string					true	"File UUID to update"
+//	@Param			file	body		models.FileUploadRequest	true	"Updated file data"
+//	@Success		200		{object}	models.FileUploadRequest	"File updated successfully"
+//	@Failure		400		{object}	map[string]interface{}	"Invalid UUID or request body"
+//	@Failure		500		{object}	map[string]interface{}	"Update operation failed"
+//	@Router			/files/{id} [put]
 func UpdateHandler(q *db.Queries) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
@@ -269,13 +280,15 @@ func UpdateHandler(q *db.Queries) gin.HandlerFunc {
 
 // SoftDeleteHandler godoc
 //
-//	@Summary	Soft delete a file
-//	@Description	Marks a file as deleted without removing it from the database.
+//	@Summary		Soft delete a file
+//	@Description	Marks a file as deleted without removing it from the database. The file can be restored later using the restore endpoint.
 //	@Tags			files
-//	@Param			id	path	string	true	"File UUID"
-//	@Success		200	{object}	map[string]string
-//	@Failure		400	{object}	map[string]string
-//	@Failure		500	{object}	map[string]string
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"File UUID to soft delete"
+//	@Success		200	{object}	map[string]interface{}	"File soft-deleted successfully"
+//	@Failure		400	{object}	map[string]interface{}	"Invalid UUID format"
+//	@Failure		500	{object}	map[string]interface{}	"Soft delete operation failed"
 //	@Router			/files/{id}/soft-delete [patch]
 func SoftDeleteHandler(q *db.Queries) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -305,13 +318,15 @@ func SoftDeleteHandler(q *db.Queries) gin.HandlerFunc {
 
 // UndoSoftDeleteHandler godoc
 //
-//	@Summary	Restore a soft-deleted file
-//	@Description	Sets the file's deleted flag back to false.
+//	@Summary		Restore a soft-deleted file
+//	@Description	Restores a previously soft-deleted file by setting its deleted flag back to false. The file becomes available again.
 //	@Tags			files
-//	@Param			id	path	string	true	"File UUID"
-//	@Success		200	{object}	map[string]string
-//	@Failure		400	{object}	map[string]string
-//	@Failure		500	{object}	map[string]string
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"File UUID to restore"
+//	@Success		200	{object}	map[string]interface{}	"File restored successfully"
+//	@Failure		400	{object}	map[string]interface{}	"Invalid UUID format"
+//	@Failure		500	{object}	map[string]interface{}	"Restore operation failed"
 //	@Router			/files/{id}/restore [patch]
 func UndoSoftDeleteHandler(q *db.Queries) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -341,12 +356,13 @@ func UndoSoftDeleteHandler(q *db.Queries) gin.HandlerFunc {
 
 // GetDeletedFilesHandler godoc
 //
-//	@Summary	Get all soft-deleted files
-//	@Description	Retrieves files that have been soft-deleted (Recycle Bin).
+//	@Summary		Get all soft-deleted files
+//	@Description	Retrieves all files that have been soft-deleted (moved to recycle bin). These files can be restored or permanently deleted.
 //	@Tags			files
+//	@Accept			json
 //	@Produce		json
-//	@Success		200	{array}	models.FileUploadRequest
-//	@Failure		500	{object}	map[string]string
+//	@Success		200	{array}	models.FileUploadRequest	"List of soft-deleted files"
+//	@Failure		500	{object}	map[string]interface{}	"Failed to fetch deleted files"
 //	@Router			/files/recycle-bin [get]
 func GetDeletedFilesHandler(q *db.Queries) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -362,12 +378,14 @@ func GetDeletedFilesHandler(q *db.Queries) gin.HandlerFunc {
 
 // GetFileMetadataHandler godoc
 //
-//	@Summary	Get lightweight file metadata
-//	@Tags		files
-//	@Produce	json
-//	@Success	200	{array}	models.FileMetadata
-//	@Failure	500	{object}	map[string]string
-//	@Router		/files/metadata [get]
+//	@Summary		Get lightweight file metadata
+//	@Description	Retrieves lightweight metadata for all files including ID, filename, size, and creation date. Does not include file content or embeddings for performance.
+//	@Tags			files
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{array}	models.FileMetadata	"List of file metadata"
+//	@Failure		500	{object}	map[string]interface{}	"Failed to get metadata"
+//	@Router			/files/metadata [get]
 func GetFileMetadataHandler(q *db.Queries) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		files, err := q.GetFileMetadata(c)

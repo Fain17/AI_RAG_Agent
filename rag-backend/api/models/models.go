@@ -11,7 +11,8 @@ type FileUploadRequest struct {
 	Deleted   bool      `json:"deleted"`
 }
 
-// @Param	file	body	FileMetaData	true	"Upload data"
+// FileMetadata represents lightweight file information without content or embeddings
+// @Description Lightweight file metadata for performance-optimized queries
 type FileMetadata struct {
 	ID        string    `json:"id"`
 	Filename  string    `json:"filename"`
