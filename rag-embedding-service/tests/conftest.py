@@ -1,8 +1,9 @@
 """Pytest configuration and fixtures for the embedding service tests."""
 
+from unittest.mock import Mock
+
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import Mock
 
 from app.main import app
 
@@ -42,4 +43,4 @@ def long_text():
 @pytest.fixture
 def special_text():
     """Provide text with special characters for testing."""
-    return "Hello! @#$%^&*()_+ 世界 🌍" 
+    return "Hello! @#$%^&*()_+ 世界 🌍"
