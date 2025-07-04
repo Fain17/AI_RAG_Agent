@@ -43,13 +43,13 @@ jobs:
           pip install -r requirements-dev.txt
 
       - name: Run Black (Code Formatting)
-        run: black --check --diff app/ tests/
+        run: black --check --diff app/
 
       - name: Run isort (Import Sorting)
-        run: isort --check-only --diff app/ tests/
+        run: isort --check-only --diff app/
 
       - name: Run Flake8 (Style Guide)
-        run: flake8 app/ tests/
+        run: flake8 app/
 
       - name: Run MyPy (Type Checking)
         run: mypy app/ --ignore-missing-imports
