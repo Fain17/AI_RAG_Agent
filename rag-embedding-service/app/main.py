@@ -14,7 +14,7 @@ class EmbedRequest(BaseModel):
 def embed(req: EmbedRequest):
     if not req.text:
         raise HTTPException(status_code=400, detail="No text provided")
-    
+
     try:
         vector = model.encode([req.text])[0].tolist()
         return {"embedding": vector}
