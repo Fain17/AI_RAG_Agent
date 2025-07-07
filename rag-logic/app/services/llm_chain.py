@@ -1,13 +1,9 @@
+from langchain.agents import AgentType, Tool, initialize_agent
 from langchain.prompts import PromptTemplate
 from langchain_ollama import OllamaLLM
-from langchain.agents import initialize_agent, Tool, AgentType
 
 # 1. Base LLM setup with Mistral
-llm = OllamaLLM(
-    model="mistral",
-    base_url="http://192.168.5.192:11434",
-    temperature=0.2
-)
+llm = OllamaLLM(model="mistral", base_url="http://192.168.5.192:11434", temperature=0.2)
 
 # 2. Prompt for QA
 qa_template = """You are a highly intelligent assistant with access to \
@@ -41,18 +37,9 @@ def dummy_tool(input: str) -> str:
     return f"[DummyTool] You asked about: {input}"
 
 
-tools = [
-    Tool(
-        name="DummyTool",
-        func=dummy_tool,
-        description="Basic string echo tool"
-    )
-]
+tools = [Tool(name="DummyTool", func=dummy_tool, description="Basic string echo tool")]
 
 # 4. Agent setup
 agent = initialize_agent(
-    tools=tools,
-    llm=llm,
-    agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-    verbose=True
+    tools=tools, llm=llm, agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION, verbose=True
 )

@@ -15,17 +15,13 @@ async def upload_file(file: UploadFile = File(...)):
 
 @router.put("/{file_id}")
 async def update_file(
-    file_id: str,
-    file: UploadFile = File(...),
-    db: Session = Depends(get_db_session)
+    file_id: str, file: UploadFile = File(...), db: Session = Depends(get_db_session)
 ):
     return await fo.update_file_service(file_id, file)
 
 
 @router.post("/query", response_model=QueryResponse)
-async def query_route(
-    req: QueryRequest, db: Session = Depends(get_db_session)
-):
+async def query_route(req: QueryRequest, db: Session = Depends(get_db_session)):
     files, answer = await run_query_pipeline(req.prompt, db)
     return QueryResponse(matches=files, answer=answer)
 

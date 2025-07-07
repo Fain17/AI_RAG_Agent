@@ -21,4 +21,4 @@ def test_app_title():
 async def test_health_check():
     """Basic health check test"""
     # This is a placeholder test - you can add actual health endpoints later
-    assert True 
+    assert True

@@ -1,8 +1,9 @@
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+
+from app.models.schemas import FileData
 from app.services.embedding import get_embedding
 from app.services.llm_chain import chain
-from app.models.schemas import FileData
 
 
 async def fetch_similar_files_pgvector(
@@ -49,14 +50,11 @@ async def fetch_similar_files_pgvector(
     rows = result.fetchall()
 
     return [
-        FileData(filename=row[0], content=row[1], similarity=row[2])
-        for row in rows
+        FileData(filename=row[0], content=row[1], similarity=row[2]) for row in rows
     ]
 
 
-async def run_query_pipeline(
-    prompt: str, db: Session
-) -> tuple[list[FileData], str]:
+async def run_query_pipeline(prompt: str, db: Session) -> tuple[list[FileData], str]:
     embedding = await get_embedding(prompt)
     files = await fetch_similar_files_pgvector(embedding, db)
 
