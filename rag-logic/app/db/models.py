@@ -1,6 +1,6 @@
 from typing import Any
 
-from pgvector.sqlalchemy import Vector
+from pgvector.sqlalchemy import Vector  # type: ignore
 from sqlalchemy import Column, String, Text
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -12,4 +12,4 @@ class File(Base):
 
     filename = Column(String, primary_key=True)
     content = Column(Text)
-    embedding = Column(Vector(384))
+    embedding: Any = Column(Vector(384))
