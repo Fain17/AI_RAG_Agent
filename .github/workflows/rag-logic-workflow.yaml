@@ -2,7 +2,7 @@ name: RAG Logic CI/CD
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ develop ]
     paths:
       - 'rag-logic/**'
       - '.github/workflows/rag-logic-workflow.yaml'

@@ -2,7 +2,7 @@ name: RAG Embedding Service CI/CD
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ develop ]
     paths:
       - 'rag-embedding-service/**'
       - '.github/workflows/rag-embedding-service-workflow.yml'
