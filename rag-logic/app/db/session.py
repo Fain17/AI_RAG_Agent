@@ -1,7 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-
 # Replace with your actual connection string
 DATABASE_URL = "postgresql+psycopg2://postgres:test123@localhost:5432/ragDB"
 

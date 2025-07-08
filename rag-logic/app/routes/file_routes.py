@@ -1,9 +1,10 @@
-from fastapi import APIRouter, UploadFile, File, Depends
+from fastapi import APIRouter, Depends, File, UploadFile
+from sqlalchemy.orm import Session
+
+import app.services.file_operations as fo
+from app.db.session import get_db_session
 from app.models.schemas import QueryRequest, QueryResponse
 from app.services.query_service import run_query_pipeline
-from sqlalchemy.orm import Session
-from app.db.session import get_db_session
-import app.services.file_operations as fo
 
 router = APIRouter(prefix="/file", tags=["file"])
 

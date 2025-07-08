@@ -1,7 +1,8 @@
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, String, Text
-from pgvector.sqlalchemy import Vector
 from typing import Any
+
+from pgvector.sqlalchemy import Vector
+from sqlalchemy import Column, String, Text
+from sqlalchemy.ext.declarative import declarative_base
 
 Base: Any = declarative_base()
 
