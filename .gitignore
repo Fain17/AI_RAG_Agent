@@ -11,3 +11,36 @@
 
 # VSCode and other IDE settings
 **/.vscode/
+
+# Linting and type checking cache
+**/.mypy_cache/
+**/.pytest_cache/
+**/htmlcov/
+
+# Security reports
+bandit-report.json
+
+# Coverage reports
+.coverage
+.coveragerc
+coverage.xml
+coverage.json
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.log

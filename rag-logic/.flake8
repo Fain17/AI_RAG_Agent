@@ -1,0 +1,39 @@
+[flake8]
+max-line-length = 88
+
+# Ignore codes explanation:
+# E203: whitespace before ':'
+# W503: line break before binary operator
+# D100: Missing docstring in public module
+# D101: Missing docstring in public class
+# D102: Missing docstring in public method
+# D103: Missing docstring in public function
+# D104: Missing docstring in public package
+# D105: Missing docstring in magic method
+# I100: Import statements are in the wrong order
+# I201: Missing newline between import groups
+extend-ignore = E203,W503,D100,D101,D102,D103,D104,D105,I100,I201
+
+exclude = 
+    __pycache__,
+    .git,
+    .venv,
+    venv,
+    env,
+    .pytest_cache,
+    .mypy_cache,
+    .coverage,
+    htmlcov,
+    dist,
+    build,
+    *.egg-info
+
+# Enable some useful flake8 plugins if installed
+# flake8-docstrings: D
+# flake8-import-order: I
+# flake8-builtins: A
+# flake8-comprehensions: C4
+# flake8-bugbear: B
+per-file-ignores =
+    tests/*: D
+    __init__.py: D104 
