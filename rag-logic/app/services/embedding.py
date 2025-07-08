@@ -1,5 +1,6 @@
-import httpx
 from typing import cast
+
+import httpx
 
 EMBEDDING_API_URL = "http://localhost:8001/embed"
 
