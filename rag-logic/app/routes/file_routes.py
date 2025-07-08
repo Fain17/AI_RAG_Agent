@@ -24,9 +24,7 @@ async def update_file(
 
 
 @router.post("/query", response_model=QueryResponse)
-async def query_route(
-    req: QueryRequest, db: Session = Depends(get_db_session)
-):
+async def query_route(req: QueryRequest, db: Session = Depends(get_db_session)):
     files, answer = await run_query_pipeline(req.prompt, db)
     return QueryResponse(matches=files, answer=answer)
 
