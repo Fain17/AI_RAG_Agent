@@ -17,6 +17,20 @@
 **/.pytest_cache/
 **/htmlcov/
 
+# Security reports
+bandit-report.json
+
+# Coverage reports
+.coverage
+.coveragerc
+coverage.xml
+coverage.json
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
 # OS generated files
 .DS_Store
 .DS_Store?
