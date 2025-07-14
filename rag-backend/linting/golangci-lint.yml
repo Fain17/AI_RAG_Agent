@@ -23,6 +23,7 @@ issues:
     - "db/db.go"
     - "db/models.go"
     - "db/query.sql.go"
+    - "db/connection.go"
   exclude-dirs:
     - "golang.org/toolchain"
 

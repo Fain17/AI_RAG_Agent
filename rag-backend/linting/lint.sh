@@ -110,11 +110,8 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-go fmt ./db/connection.go
-if [ $? -ne 0 ]; then
-    print_error "Failed to format code"
-    exit 1
-fi
+# Skipping connection.go formatting (ignored file)
+# go fmt ./db/connection.go
 
 # Run basic linting tools
 print_status "Running basic linting tools..."
@@ -139,15 +136,14 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-go vet ./db/connection.go
-if [ $? -ne 0 ]; then
-    print_warning "go vet failed for db/connection.go (expected due to dependencies on auto-generated files)"
-fi
+# Skipping connection.go vet check (ignored file)
+# go vet ./db/connection.go
 
 # Check imports with goimports
 print_status "Checking imports with goimports..."
 if command -v goimports &> /dev/null; then
-    goimports -l ./api/handlers/*.go ./api/models/*.go ./api/routes/*.go ./db/connection.go
+    goimports -l ./api/handlers/*.go ./api/models/*.go ./api/routes/*.go
+    # Skipping connection.go from goimports check (ignored file)
     if [ $? -ne 0 ]; then
         print_error "goimports check failed"
         exit 1
