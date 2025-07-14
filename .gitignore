@@ -44,3 +44,146 @@ Thumbs.db
 *.tmp
 *.temp
 *.log
+
+# ===== GO-SPECIFIC ENTRIES =====
+
+# Go binaries and executables
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+rag-backend/rag-backend
+**/server
+**/main
+
+# Go test and coverage files
+*.test
+*.out
+**/coverage.out
+**/coverage.html
+**/c.out
+**/profile.out
+**/profile.cov
+**/benchmark_results.txt
+
+# Go build cache
+**/.gocache/
+**/go.work
+**/go.work.sum
+
+# Go vendor directory (if using vendor)
+**/vendor/
+
+# Go module cache
+**/go.sum.backup
+
+# IDE and editor files
+**/.idea/
+**/.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+.vimrc.local
+
+# GoLand
+**/.idea/
+**/*.iml
+**/*.iws
+**/*.ipr
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Vim
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+*~
+
+# Air (live reload for Go)
+**/tmp/
+**/.air.toml
+
+# Docker
+**/.dockerignore
+**/docker-compose.override.yml
+**/docker-compose.override.yaml
+
+# Database files
+**/*.db
+**/*.sqlite
+**/*.sqlite3
+
+# Logs
+**/*.log
+**/logs/
+**/log/
+
+# Configuration files with secrets
+**/config/local.yml
+**/config/development.yml
+**/config/production.yml
+**/config/*.local.yml
+
+# Backup files
+*.bak
+*.backup
+*.orig
+
+# Dependency directories
+**/node_modules/
+
+# Certificates and keys
+**/*.pem
+**/*.key
+**/*.crt
+**/*.p12
+**/*.pfx
+
+# Go linting reports
+**/golangci-lint-report.xml
+**/linting-report.txt
+**/lint-report.html
+
+# Ensure test and linting directories are tracked by git
+!test/
+!linting/
+
+# Security scan reports
+**/trivy-results.sarif
+**/security-report.json
+
+# Documentation generated files
+**/docs/build/
+**/docs/generated/
+
+# Runtime files
+**/*.pid
+**/*.seed
+**/*.pid.lock
+
+# Profiling files
+**/cpu.prof
+**/mem.prof
+**/trace.out
+**/heap.prof
+
+# Development databases
+**/dev.db
+**/test.db
+**/local.db

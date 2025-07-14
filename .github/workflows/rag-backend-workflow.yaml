@@ -1,9 +1,13 @@
-name: RAG Backend CI/CD to GHCR
+name: RAG Backend CI/CD
 
 on:
   push:
     branches:
       - develop
+    paths:
+      - 'rag-backend/**'
+  pull_request:
+    branches: [ main, develop ]
     paths:
       - 'rag-backend/**'
 
@@ -12,26 +16,152 @@ permissions:
   packages: write  # Required to push to GHCR
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: Lint Code
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23'
+
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Run linting
+        run: |
+          cd rag-backend
+          chmod +x linting/lint.sh
+          ./linting/lint.sh
+
+      - name: Upload linting artifacts
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: linting-results
+          path: |
+            rag-backend/golangci-lint-report.xml
+            rag-backend/linting-report.txt
+          retention-days: 7
+
+  test:
+    runs-on: ubuntu-latest
+    name: Run Tests
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23'
+
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Run tests
+        run: |
+          cd rag-backend
+          chmod +x test/run_tests.sh
+          ./test/run_tests.sh
+
+      - name: Upload test coverage
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-coverage
+          path: |
+            rag-backend/coverage.out
+            rag-backend/coverage.html
+          retention-days: 7
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./rag-backend/coverage.out
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
   build-and-push:
     runs-on: ubuntu-latest
-
+    name: Build and Push Docker Image
+    needs: [lint, test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     environment: develop  # 🔹 This links to the GitHub Environment named 'develop'
-
-
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Log in to GitHub Container Registry (GHCR)
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build with DATABASE_URL
-        run: |
-          docker build \
-            --build-arg DATABASE_URL="${{ secrets.DATABASE_URL }}" \
-            -t ghcr.io/fain17/ai_rag_agent/rag-backend:dev \
-            ./rag-backend
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/fain17/ai_rag_agent/rag-backend
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=dev,enable={{is_default_branch}}
 
-      - name: Push Docker image to GHCR
-        run: docker push ghcr.io/fain17/ai_rag_agent/rag-backend:dev
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./rag-backend
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  security-scan:
+    runs-on: ubuntu-latest
+    name: Security Scan
+    needs: build-and-push
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'ghcr.io/fain17/ai_rag_agent/rag-backend:dev'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'

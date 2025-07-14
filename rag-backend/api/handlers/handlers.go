@@ -5,12 +5,13 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/fain17/rag-backend/api/models"
-	"github.com/fain17/rag-backend/db"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/pgvector/pgvector-go"
+	pgvector "github.com/pgvector/pgvector-go"
+
+	"github.com/fain17/rag-backend/api/models"
+	"github.com/fain17/rag-backend/db"
 )
 
 // GetHandler godoc
