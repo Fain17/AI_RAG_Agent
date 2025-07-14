@@ -38,7 +38,7 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-${{ hashFiles('rag-backend/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
 
@@ -47,16 +47,6 @@ jobs:
           cd rag-backend
           chmod +x linting/lint.sh
           ./linting/lint.sh
-
-      - name: Upload linting artifacts
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: linting-results
-          path: |
-            rag-backend/golangci-lint-report.xml
-            rag-backend/linting-report.txt
-          retention-days: 7
 
   test:
     runs-on: ubuntu-latest
@@ -77,7 +67,7 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-${{ hashFiles('rag-backend/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
 
