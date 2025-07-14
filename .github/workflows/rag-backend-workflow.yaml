@@ -40,10 +40,9 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-rag-backend-${{ github.sha }}
+          key: ${{ runner.os }}-rag-backend-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-go-rag-backend-
-            ${{ runner.os }}-go-
+            ${{ runner.os }}-rag-backend-
 
       - name: Run linting
         run: |
@@ -70,10 +69,9 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-rag-backend-${{ github.sha }}
+          key: ${{ runner.os }}-rag-backend-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-go-rag-backend-
-            ${{ runner.os }}-go-
+            ${{ runner.os }}-rag-backend-
 
       - name: Run tests
         run: |
