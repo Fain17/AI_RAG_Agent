@@ -170,8 +170,6 @@ jobs:
             rag-logic:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-args: |
-            DATABASE_URL=${{ secrets.DATABASE_URL }}
 
       - name: Test Docker container
         run: |
@@ -230,8 +228,6 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-args: |
-            DATABASE_URL=${{ secrets.DATABASE_URL }}
 
   docker-security-scan:
     name: Docker Security Scan with Trivy
@@ -246,7 +242,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t rag-logic:${{ github.sha }} ./rag-logic --build-arg DATABASE_URL="${{ secrets.DATABASE_URL }}"
+          docker build -t rag-logic:${{ github.sha }} ./rag-logic
           docker tag rag-logic:${{ github.sha }} rag-logic:latest
 
       - name: Run Trivy vulnerability scanner
