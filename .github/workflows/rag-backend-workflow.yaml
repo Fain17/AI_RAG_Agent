@@ -40,8 +40,9 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('rag-backend/go.sum') }}
+          key: ${{ runner.os }}-go-rag-backend-${{ hashFiles('rag-backend/go.sum', 'rag-backend/go.mod') }}
           restore-keys: |
+            ${{ runner.os }}-go-rag-backend-
             ${{ runner.os }}-go-
 
       - name: Run linting
@@ -69,8 +70,9 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('rag-backend/go.sum') }}
+          key: ${{ runner.os }}-go-rag-backend-${{ hashFiles('rag-backend/go.sum', 'rag-backend/go.mod') }}
           restore-keys: |
+            ${{ runner.os }}-go-rag-backend-
             ${{ runner.os }}-go-
 
       - name: Run tests
