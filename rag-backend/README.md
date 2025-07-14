@@ -20,7 +20,7 @@ Pull and run the latest image:
 
 ```bash
 # Pull the Docker image
-docker pull ghcr.io/fain17/ai_rag_agent/rag-backend:dev
+docker pull ghcr.io/fain17/rag-backend:latest
 
 # Run with database connection
 docker run -d \
@@ -28,7 +28,7 @@ docker run -d \
   -p 8080:8080 \
   -e DATABASE_URL="postgres://username:password@localhost:5432/rag_db?sslmode=disable" \
   -e GIN_MODE=release \
-  ghcr.io/fain17/ai_rag_agent/rag-backend:dev
+  ghcr.io/fain17/rag-backend:latest
 ```
 
 ### Environment Variables

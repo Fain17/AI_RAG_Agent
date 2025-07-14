@@ -11,6 +11,10 @@ on:
     paths:
       - 'rag-backend/**'
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/rag-backend
+
 permissions:
   contents: read
   packages: write  # Required to push to GHCR
@@ -105,8 +109,10 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Push Docker Image
     needs: [lint, test]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-    environment: develop  # 🔹 This links to the GitHub Environment named 'develop'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Checkout code
@@ -126,12 +132,12 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/fain17/ai_rag_agent/rag-backend
+          images: ghcr.io/${{ github.repository_owner }}/rag-backend
           tags: |
             type=ref,event=branch
             type=ref,event=pr
             type=sha,prefix={{branch}}-
-            type=raw,value=dev,enable={{is_default_branch}}
+            type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -140,8 +146,6 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            DATABASE_URL=${{ secrets.DATABASE_URL }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -149,7 +153,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Security Scan
     needs: build-and-push
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -157,7 +161,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'ghcr.io/fain17/ai_rag_agent/rag-backend:dev'
+          image-ref: 'ghcr.io/${{ github.repository_owner }}/rag-backend:latest'
           format: 'sarif'
           output: 'trivy-results.sarif'
 
