@@ -6,10 +6,12 @@ on:
       - develop
     paths:
       - 'rag-backend/**'
+      - '.github/workflows/rag-backend-workflow.yaml'
   pull_request:
     branches: [ main, develop ]
     paths:
       - 'rag-backend/**'
+      - '.github/workflows/rag-backend-workflow.yaml'
 
 env:
   REGISTRY: ghcr.io
