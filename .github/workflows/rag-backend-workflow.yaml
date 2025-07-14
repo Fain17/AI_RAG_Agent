@@ -40,7 +40,7 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-rag-backend-${{ hashFiles('rag-backend/go.sum', 'rag-backend/go.mod') }}
+          key: ${{ runner.os }}-go-rag-backend-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-go-rag-backend-
             ${{ runner.os }}-go-
@@ -70,7 +70,7 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-rag-backend-${{ hashFiles('rag-backend/go.sum', 'rag-backend/go.mod') }}
+          key: ${{ runner.os }}-go-rag-backend-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-go-rag-backend-
             ${{ runner.os }}-go-
