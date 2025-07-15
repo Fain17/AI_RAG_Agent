@@ -9,6 +9,14 @@ from app.services.query_service import run_query_pipeline
 router = APIRouter(prefix="/file", tags=["file"])
 
 
+@router.get("/all-file-metadata")
+async def get_all_file_metadata():
+    return await fo.get_all_file_metadata_service()
+
+@router.get("/metadata-preview/{file_id}")
+async def get_file_metadata_preview(file_id: str):
+    return await fo.get_file_metadata_preview_service(file_id)
+
 @router.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
     return await fo.upload_file_service(file)

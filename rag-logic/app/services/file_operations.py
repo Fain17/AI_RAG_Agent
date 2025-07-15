@@ -154,3 +154,37 @@ async def update_file_service(file_id: str, file: UploadFile):
         raise HTTPException(
             status_code=500, detail=f"Unexpected error: {str(e)}"
         )
+
+
+async def get_all_file_metadata_service():
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(f"{GO_BACKEND_URL}/files/metadata")
+            if resp.status_code == 200:
+                return resp.json()
+            raise HTTPException(
+                status_code=resp.status_code,
+                detail="Failed to retrieve all files.",
+            )
+    except httpx.RequestError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Connection error: {str(e)}",
+        )
+
+
+async def get_file_metadata_preview_service(file_id: str):
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(f"{GO_BACKEND_URL}/files/{file_id}/metadata-preview")
+            if resp.status_code == 200:
+                return resp.json()
+            raise HTTPException(
+                status_code=resp.status_code,
+                detail="Failed to retrieve file metadata preview.",
+            )
+    except httpx.RequestError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Connection error: {str(e)}",
+        )
