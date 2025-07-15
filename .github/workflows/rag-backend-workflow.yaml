@@ -2,8 +2,7 @@ name: RAG Backend CI/CD
 
 on:
   push:
-    branches:
-      - develop
+    branches: [ main, develop ]
     paths:
       - 'rag-backend/**'
       - '.github/workflows/rag-backend-workflow.yaml'

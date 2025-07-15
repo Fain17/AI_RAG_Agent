@@ -2,7 +2,7 @@ name: RAG Embedding Service CI/CD
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ main, develop ]
     paths:
       - 'rag-embedding-service/**'
       - '.github/workflows/rag-embedding-service-workflow.yml'
@@ -151,7 +151,6 @@ jobs:
     name: Docker Build and Test
     runs-on: ubuntu-latest
     needs: [lint, test, security-scan]
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
