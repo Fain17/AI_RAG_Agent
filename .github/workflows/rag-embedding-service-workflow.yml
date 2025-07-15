@@ -150,7 +150,7 @@ jobs:
   docker-build-and-test:
     name: Docker Build and Test
     runs-on: ubuntu-latest
-    needs: [lint, test]
+    needs: [lint, test, security-scan]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -189,7 +189,7 @@ jobs:
   docker-push:
     name: Push Docker Image
     runs-on: ubuntu-latest
-    needs: [docker-build-and-test, security-scan]
+    needs: [docker-build-and-test]
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
     permissions:
       contents: read
@@ -232,7 +232,8 @@ jobs:
   docker-security-scan:
     name: Docker Security Scan with Trivy
     runs-on: ubuntu-latest
-    needs: docker-build-and-test
+    needs: docker-push
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
     permissions:
       contents: read
       security-events: write
