@@ -421,6 +421,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/files/{id}/metadata-preview": {
+            "get": {
+                "description": "Retrieves lightweight metadata for all files including ID, filename, size, and creation date. Does not include file content or embeddings for performance.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get lightweight file metadata preview",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File UUID to get metadata for",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of file metadata",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.FileMetadata"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid UUID format",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to get metadata",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/files/{id}/restore": {
             "patch": {
                 "description": "Restores a previously soft-deleted file by setting its deleted flag back to false. The file becomes available again.",

@@ -32,6 +32,7 @@ func NewRouter(queries *db.Queries) *gin.Engine {
 	fileGroup.PATCH("/:id/restore", handlers.UndoSoftDeleteHandler(queries))
 	fileGroup.GET("/recycle-bin", handlers.GetDeletedFilesHandler(queries))
 	fileGroup.GET("/metadata", handlers.GetFileMetadataHandler(queries))
+	fileGroup.GET("/:id/metadata-preview", handlers.GetFileMetadataPreviewHandler(queries))
 
 	return r
 }

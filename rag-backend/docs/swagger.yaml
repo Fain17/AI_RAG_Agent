@@ -137,6 +137,40 @@ paths:
       summary: Update a file
       tags:
       - files
+  /files/{id}/metadata-preview:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves lightweight metadata for all files including ID, filename,
+        size, and creation date. Does not include file content or embeddings for performance.
+      parameters:
+      - description: File UUID to get metadata for
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of file metadata
+          schema:
+            items:
+              $ref: '#/definitions/models.FileMetadata'
+            type: array
+        "400":
+          description: Invalid UUID format
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Failed to get metadata
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get lightweight file metadata preview
+      tags:
+      - files
   /files/{id}/restore:
     patch:
       consumes:

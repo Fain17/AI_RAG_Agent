@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -396,5 +397,65 @@ func GetFileMetadataHandler(q *db.Queries) gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, files)
+	}
+}
+
+// GetFileMetadataPreviewHandler godoc
+//
+//	@Summary		Get lightweight file metadata preview
+//	@Description	Retrieves lightweight metadata for all files including ID, filename, size, and creation date. Does not include file content or embeddings for performance.
+//	@Tags			files
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"File UUID to get metadata for"
+//	@Success		200	{array}	models.FileMetadata	"List of file metadata"
+//	@Failure		400	{object}	map[string]interface{}	"Invalid UUID format"
+//	@Failure		500	{object}	map[string]interface{}	"Failed to get metadata"
+//	@Router			/files/{id}/metadata-preview [get]
+func GetFileMetadataPreviewHandler(q *db.Queries) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+		parsedUUID, err := uuid.Parse(id)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+			return
+		}
+
+		var dbUUID pgtype.UUID
+		if err := dbUUID.Scan(parsedUUID.String()); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to convert UUID"})
+			return
+		}
+
+		file, err := q.GetFile(c, dbUUID)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "file not found"})
+			return
+		}
+
+		// Convert content (assume it's a string — adjust if it's []byte)
+		contentStr := file.Content
+		if b, ok := any(file.Content).([]byte); ok {
+			contentStr = string(b)
+		}
+
+		// Compute size in bytes
+		size := len([]byte(contentStr))
+
+		// Get preview (first 2 lines)
+		lines := strings.Split(contentStr, "\n")
+		previewLines := 5
+		if len(lines) <= previewLines {
+			previewLines = len(lines)
+		}
+		preview := strings.Join(lines[:previewLines], "\n")
+
+		// Respond with just the metadata + preview
+		c.JSON(http.StatusOK, gin.H{
+			"id":       file.ID,
+			"filename": file.Filename,
+			"size":     size,
+			"preview":  preview,
+		})
 	}
 }
