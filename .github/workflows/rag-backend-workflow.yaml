@@ -7,11 +7,11 @@ on:
     paths:
       - 'rag-backend/**'
       - '.github/workflows/rag-backend-workflow.yaml'
-  pull_request:
-    branches: [ main, develop ]
-    paths:
-      - 'rag-backend/**'
-      - '.github/workflows/rag-backend-workflow.yaml'
+  # pull_request:
+  #   branches: [ main, develop ]
+  #   paths:
+  #     - 'rag-backend/**'
+  #     - '.github/workflows/rag-backend-workflow.yaml'
 
 env:
   REGISTRY: ghcr.io
@@ -186,3 +186,63 @@ jobs:
         with:
           name: trivy-security-report
           path: trivy-results.json
+
+  release:
+    runs-on: ubuntu-latest
+    name: Create Release
+    needs: [build-and-push, security-scan]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    permissions:
+      contents: write
+      packages: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for changelog generation
+
+      - name: Generate version
+        id: version
+        run: |
+          # Generate version based on date and commit
+          VERSION="v$(date +%Y.%m.%d)-$(git rev-parse --short HEAD)"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create Git tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag ${{ steps.version.outputs.tag }}
+          git push origin ${{ steps.version.outputs.tag }}
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Generate changelog from recent commits
+          CHANGELOG=$(git log --oneline --since="7 days ago" --no-merges --pretty=format:"- %s" | head -20)
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG="- Minor updates and bug fixes"
+          fi
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.version.outputs.tag }}
+          name: RAG Backend Release ${{ steps.version.outputs.version }}
+          body: |
+            ## Changes in this release
+            ${{ steps.changelog.outputs.changelog }}
+            
+            ## Docker Image
+            This release includes a Docker image available at:
+            `ghcr.io/${{ github.repository_owner }}/rag-backend:${{ steps.version.outputs.tag }}`
+            
+            ## Security Scan
+            All security scans have passed for this release.
+          draft: false
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
