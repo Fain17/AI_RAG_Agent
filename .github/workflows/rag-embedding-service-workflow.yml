@@ -219,13 +219,22 @@ jobs:
             type=sha,prefix={{branch}}-
             type=raw,value=latest,enable={{is_default_branch}}
 
+      - name: Set Docker tags
+        id: set-tags
+        run: |
+          REPO=$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')
+          if [[ "${GITHUB_REF}" == "refs/heads/develop" ]]; then
+            echo "tags=ghcr.io/${REPO}/rag-embedding-service:develop-${GITHUB_SHA}" >> $GITHUB_OUTPUT
+          else
+            echo "tags=ghcr.io/${REPO}/rag-embedding-service:latest,ghcr.io/${REPO}/rag-embedding-service:${GITHUB_SHA}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: ./rag-embedding-service
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.set-tags.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
