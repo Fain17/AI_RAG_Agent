@@ -29,10 +29,10 @@ jobs:
           set -e
           echo "Fetching container packages for $OWNER..."
           gh api -H "Accept: application/vnd.github+json" \
-            /orgs/$OWNER/packages?package_type=container | jq -r '.[].name' | while read package; do
+            /users/$OWNER/packages?package_type=container | jq -r '.[].name' | while read package; do
             echo "Processing package: $package"
             versions=$(gh api -H "Accept: application/vnd.github+json" \
-              /orgs/$OWNER/packages/container/$package/versions | jq -r '.[].id')
+              /users/$OWNER/packages/container/$package/versions | jq -r '.[].id')
             count=0
             for version in $versions; do
               count=$((count+1))
@@ -41,7 +41,7 @@ jobs:
               else
                 echo "Deleting version $version of $package"
                 gh api --method DELETE -H "Accept: application/vnd.github+json" \
-                  /orgs/$OWNER/packages/container/$package/versions/$version
+                  /users/$OWNER/packages/container/$package/versions/$version
               fi
             done
           done 
