@@ -7,11 +7,11 @@ on:
     paths:
       - 'rag-backend/**'
       - '.github/workflows/rag-backend-workflow.yaml'
-  # pull_request:
-  #   branches: [ main, develop ]
-  #   paths:
-  #     - 'rag-backend/**'
-  #     - '.github/workflows/rag-backend-workflow.yaml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'rag-backend/**'
+      - '.github/workflows/rag-backend-workflow.yaml'
 
 env:
   REGISTRY: ghcr.io
@@ -191,7 +191,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Create Release
     needs: [build-and-push, security-scan]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       contents: write
       packages: read
