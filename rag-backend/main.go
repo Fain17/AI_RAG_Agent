@@ -12,9 +12,10 @@ package main
 import (
 	"log"
 
+	"github.com/joho/godotenv"
+
 	api "github.com/fain17/rag-backend/api/routes"
 	"github.com/fain17/rag-backend/db"
-	"github.com/joho/godotenv"
 )
 
 func main() {

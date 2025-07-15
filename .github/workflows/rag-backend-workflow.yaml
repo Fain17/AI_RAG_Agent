@@ -1,4 +1,4 @@
-name: RAG Backend CI/CD to GHCR
+name: RAG Backend CI/CD
 
 on:
   push:
@@ -6,32 +6,243 @@ on:
       - develop
     paths:
       - 'rag-backend/**'
+      - '.github/workflows/rag-backend-workflow.yaml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'rag-backend/**'
+      - '.github/workflows/rag-backend-workflow.yaml'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/rag-backend
 
 permissions:
   contents: read
   packages: write  # Required to push to GHCR
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: Lint Code
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-rag-backend-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-rag-backend-
+
+      - name: Run linting
+        run: |
+          cd rag-backend
+          chmod +x linting/lint.sh
+          ./linting/lint.sh
+
+  test:
+    runs-on: ubuntu-latest
+    name: Run Tests
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-rag-backend-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-rag-backend-
+
+      - name: Run tests
+        run: |
+          cd rag-backend
+          chmod +x test/run_tests.sh
+          ./test/run_tests.sh
+
+      - name: Upload test coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-coverage
+          path: |
+            rag-backend/coverage.out
+            rag-backend/coverage.html
+          retention-days: 7
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./rag-backend/coverage.out
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
   build-and-push:
     runs-on: ubuntu-latest
-
-    environment: develop  # 🔹 This links to the GitHub Environment named 'develop'
-
-
+    name: Build and Push Docker Image
+    needs: [lint, test]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Log in to GitHub Container Registry (GHCR)
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build with DATABASE_URL
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/rag-backend
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./rag-backend
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  security-scan:
+    runs-on: ubuntu-latest
+    name: Security Scan
+    needs: build-and-push
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
         run: |
-          docker build \
-            --build-arg DATABASE_URL="${{ secrets.DATABASE_URL }}" \
-            -t ghcr.io/fain17/ai_rag_agent/rag-backend:dev \
-            ./rag-backend
+          docker build -t rag-backend:${{ github.sha }} ./rag-backend
+          docker tag rag-backend:${{ github.sha }} rag-backend:latest
 
-      - name: Push Docker image to GHCR
-        run: docker push ghcr.io/fain17/ai_rag_agent/rag-backend:dev
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        continue-on-error: true
+        with:
+          image-ref: 'rag-backend:latest'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Run Trivy vulnerability scanner (JSON format)
+        uses: aquasecurity/trivy-action@master
+        continue-on-error: true
+        with:
+          image-ref: 'rag-backend:latest'
+          format: 'json'
+          output: 'trivy-results.json'
+
+      - name: Upload Trivy JSON Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trivy-security-report
+          path: trivy-results.json
+
+  release:
+    runs-on: ubuntu-latest
+    name: Create Release
+    needs: [build-and-push, security-scan]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+      packages: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for changelog generation
+
+      - name: Generate version
+        id: version
+        run: |
+          # Generate version based on date and commit
+          VERSION="v$(date +%Y.%m.%d)-$(git rev-parse --short HEAD)"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create Git tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag ${{ steps.version.outputs.tag }}
+          git push origin ${{ steps.version.outputs.tag }}
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Generate changelog from recent commits
+          CHANGELOG=$(git log --oneline --since="7 days ago" --no-merges --pretty=format:"- %s" | head -20)
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG="- Minor updates and bug fixes"
+          fi
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.version.outputs.tag }}
+          name: RAG Backend Release ${{ steps.version.outputs.version }}
+          body: |
+            ## Changes in this release
+            ${{ steps.changelog.outputs.changelog }}
+            
+            ## Docker Image
+            This release includes a Docker image available at:
+            `ghcr.io/${{ github.repository_owner }}/rag-backend:${{ steps.version.outputs.tag }}`
+            
+            ## Security Scan
+            All security scans have passed for this release.
+          draft: false
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}

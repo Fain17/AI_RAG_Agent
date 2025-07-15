@@ -3,11 +3,12 @@ package routes
 import (
 	_ "github.com/fain17/rag-backend/docs"
 
-	handlers "github.com/fain17/rag-backend/api/handlers"
-	"github.com/fain17/rag-backend/db"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+
+	handlers "github.com/fain17/rag-backend/api/handlers"
+	"github.com/fain17/rag-backend/db"
 )
 
 func NewRouter(queries *db.Queries) *gin.Engine {

@@ -1,196 +1,116 @@
-[![GitHub Workflow Status (branch)](https://img.shields.io/github/actions/workflow/status/golang-migrate/migrate/ci.yaml?branch=master)](https://github.com/golang-migrate/migrate/actions/workflows/ci.yaml?query=branch%3Amaster)
-[![GoDoc](https://pkg.go.dev/badge/github.com/golang-migrate/migrate)](https://pkg.go.dev/github.com/golang-migrate/migrate/v4)
-[![Coverage Status](https://img.shields.io/coveralls/github/golang-migrate/migrate/master.svg)](https://coveralls.io/github/golang-migrate/migrate?branch=master)
-[![packagecloud.io](https://img.shields.io/badge/deb-packagecloud.io-844fec.svg)](https://packagecloud.io/golang-migrate/migrate?filter=debs)
-[![Docker Pulls](https://img.shields.io/docker/pulls/migrate/migrate.svg)](https://hub.docker.com/r/migrate/migrate/)
-![Supported Go Versions](https://img.shields.io/badge/Go-1.23%2C%201.24-lightgrey.svg)
-[![GitHub Release](https://img.shields.io/github/release/golang-migrate/migrate.svg)](https://github.com/golang-migrate/migrate/releases)
-[![Go Report Card](https://goreportcard.com/badge/github.com/golang-migrate/migrate/v4)](https://goreportcard.com/report/github.com/golang-migrate/migrate/v4)
+# RAG Backend API
 
-# migrate
+A Go-based REST API for managing documents with vector embeddings using PostgreSQL and pgvector.
 
-__Database migrations written in Go. Use as [CLI](#cli-usage) or import as [library](#use-in-your-go-project).__
+## Features
 
-* Migrate reads migrations from [sources](#migration-sources)
-   and applies them in correct order to a [database](#databases).
-* Drivers are "dumb", migrate glues everything together and makes sure the logic is bulletproof.
-   (Keeps the drivers lightweight, too.)
-* Database drivers don't assume things or try to correct user input. When in doubt, fail.
+- 📄 **Document Management**: Upload, retrieve, update, and delete documents
+- 🔍 **Vector Search**: Store and search document embeddings
+- 🗂️ **File Operations**: Filename search and date-range filtering
+- 🗑️ **Soft Delete**: Recycle bin functionality with restore capability
+- 📊 **Metadata**: Lightweight file metadata retrieval
+- 🔒 **Validation**: Input validation and error handling
+- 📖 **Documentation**: Swagger/OpenAPI documentation
 
-Forked from [mattes/migrate](https://github.com/mattes/migrate)
+## Quick Start
 
-## Databases
+### Using Docker
 
-Database drivers run migrations. [Add a new database?](database/driver.go)
-
-* [PostgreSQL](database/postgres)
-* [PGX v4](database/pgx)
-* [PGX v5](database/pgx/v5)
-* [Redshift](database/redshift)
-* [Ql](database/ql)
-* [Cassandra / ScyllaDB](database/cassandra)
-* [SQLite](database/sqlite)
-* [SQLite3](database/sqlite3) ([todo #165](https://github.com/mattes/migrate/issues/165))
-* [SQLCipher](database/sqlcipher)
-* [MySQL / MariaDB](database/mysql)
-* [Neo4j](database/neo4j)
-* [MongoDB](database/mongodb)
-* [CrateDB](database/crate) ([todo #170](https://github.com/mattes/migrate/issues/170))
-* [Shell](database/shell) ([todo #171](https://github.com/mattes/migrate/issues/171))
-* [Google Cloud Spanner](database/spanner)
-* [CockroachDB](database/cockroachdb)
-* [YugabyteDB](database/yugabytedb)
-* [ClickHouse](database/clickhouse)
-* [Firebird](database/firebird)
-* [MS SQL Server](database/sqlserver)
-* [rqlite](database/rqlite)
-
-### Database URLs
-
-Database connection strings are specified via URLs. The URL format is driver dependent but generally has the form: `dbdriver://username:password@host:port/dbname?param1=true&param2=false`
-
-Any [reserved URL characters](https://en.wikipedia.org/wiki/Percent-encoding#Percent-encoding_reserved_characters) need to be escaped. Note, the `%` character also [needs to be escaped](https://en.wikipedia.org/wiki/Percent-encoding#Percent-encoding_the_percent_character)
-
-Explicitly, the following characters need to be escaped:
-`!`, `#`, `$`, `%`, `&`, `'`, `(`, `)`, `*`, `+`, `,`, `/`, `:`, `;`, `=`, `?`, `@`, `[`, `]`
-
-It's easiest to always run the URL parts of your DB connection URL (e.g. username, password, etc) through an URL encoder. See the example Python snippets below:
+Pull and run the latest image:
 
 ```bash
-$ python3 -c 'import urllib.parse; print(urllib.parse.quote(input("String to encode: "), ""))'
-String to encode: FAKEpassword!#$%&'()*+,/:;=?@[]
-FAKEpassword%21%23%24%25%26%27%28%29%2A%2B%2C%2F%3A%3B%3D%3F%40%5B%5D
-$ python2 -c 'import urllib; print urllib.quote(raw_input("String to encode: "), "")'
-String to encode: FAKEpassword!#$%&'()*+,/:;=?@[]
-FAKEpassword%21%23%24%25%26%27%28%29%2A%2B%2C%2F%3A%3B%3D%3F%40%5B%5D
-$
+# Pull the Docker image
+docker pull ghcr.io/fain17/rag-backend:latest
+
+# Run with database connection
+docker run -d \
+  --name rag-backend \
+  -p 8080:8080 \
+  -e DATABASE_URL="postgres://username:password@localhost:5432/rag_db?sslmode=disable" \
+  -e GIN_MODE=release \
+  ghcr.io/fain17/rag-backend:latest
 ```
 
-## Migration Sources
+### Environment Variables
 
-Source drivers read migrations from local or remote sources. [Add a new source?](source/driver.go)
+| Variable | Required | Description | Example |
+|----------|----------|-------------|---------|
+| `DATABASE_URL` | Yes | PostgreSQL connection string | `postgres://user:pass@localhost:5432/db?sslmode=disable` |
+| `GIN_MODE` | No | Gin framework mode | `release` (default: `debug`) |
 
-* [Filesystem](source/file) - read from filesystem
-* [io/fs](source/iofs) - read from a Go [io/fs](https://pkg.go.dev/io/fs#FS)
-* [Go-Bindata](source/go_bindata) - read from embedded binary data ([jteeuwen/go-bindata](https://github.com/jteeuwen/go-bindata))
-* [pkger](source/pkger) - read from embedded binary data ([markbates/pkger](https://github.com/markbates/pkger))
-* [GitHub](source/github) - read from remote GitHub repositories
-* [GitHub Enterprise](source/github_ee) - read from remote GitHub Enterprise repositories
-* [Bitbucket](source/bitbucket) - read from remote Bitbucket repositories
-* [Gitlab](source/gitlab) - read from remote Gitlab repositories
-* [AWS S3](source/aws_s3) - read from Amazon Web Services S3
-* [Google Cloud Storage](source/google_cloud_storage) - read from Google Cloud Platform Storage
-
-## CLI usage
-
-* Simple wrapper around this library.
-* Handles ctrl+c (SIGINT) gracefully.
-* No config search paths, no config files, no magic ENV var injections.
-
-[CLI Documentation](cmd/migrate) (includes CLI install instructions)
-
-### Basic usage
+### Database Connection Examples
 
 ```bash
-$ migrate -source file://path/to/migrations -database postgres://localhost:5432/database up 2
+# Local PostgreSQL
+DATABASE_URL="postgres://rag_user:rag_password@localhost:5432/rag_database?sslmode=disable"
+
+# PostgreSQL with SSL
+DATABASE_URL="postgres://rag_user:rag_password@localhost:5432/rag_database?sslmode=require"
+
+# Docker Compose PostgreSQL
+DATABASE_URL="postgres://rag_user:rag_password@postgres:5432/rag_database?sslmode=disable"
 ```
 
-### Docker usage
+## API Endpoints
+
+### Files
+- `GET /files/{id}` - Get file by ID
+- `GET /files/getall` - Get all files
+- `GET /files/search?query={query}` - Search files by filename
+- `GET /files/date-range?start={date}&end={date}` - Get files by date range
+- `GET /files/metadata` - Get file metadata
+- `POST /files/upload` - Upload new file
+- `PUT /files/{id}` - Update file
+- `DELETE /files/{id}` - Delete file permanently
+
+### Recycle Bin
+- `PATCH /files/{id}/soft-delete` - Soft delete file
+- `PATCH /files/{id}/restore` - Restore soft-deleted file
+- `GET /files/recycle-bin` - Get all soft-deleted files
+
+### Documentation
+- `GET /docs/swagger/index.html` - Swagger UI
+- `GET /swagger/doc.json` - OpenAPI JSON spec
+
+## API Documentation
+
+Once running, visit: `http://localhost:8080/docs/swagger/index.html`
+
+## Health Check
 
 ```bash
-$ docker run -v {{ migration dir }}:/migrations --network host migrate/migrate
-    -path=/migrations/ -database postgres://localhost:5432/database up 2
+curl http://localhost:8080/files/metadata
 ```
 
-## Use in your Go project
+## Development
 
-* API is stable and frozen for this release (v3 & v4).
-* Uses [Go modules](https://golang.org/cmd/go/#hdr-Modules__module_versions__and_more) to manage dependencies.
-* To help prevent database corruptions, it supports graceful stops via `GracefulStop chan bool`.
-* Bring your own logger.
-* Uses `io.Reader` streams internally for low memory overhead.
-* Thread-safe and no goroutine leaks.
-
-__[Go Documentation](https://pkg.go.dev/github.com/golang-migrate/migrate/v4)__
-
-```go
-import (
-    "github.com/golang-migrate/migrate/v4"
-    _ "github.com/golang-migrate/migrate/v4/database/postgres"
-    _ "github.com/golang-migrate/migrate/v4/source/github"
-)
-
-func main() {
-    m, err := migrate.New(
-        "github://mattes:personal-access-token@mattes/migrate_test",
-        "postgres://localhost:5432/database?sslmode=enable")
-    m.Steps(2)
-}
-```
-
-Want to use an existing database client?
-
-```go
-import (
-    "database/sql"
-    _ "github.com/lib/pq"
-    "github.com/golang-migrate/migrate/v4"
-    "github.com/golang-migrate/migrate/v4/database/postgres"
-    _ "github.com/golang-migrate/migrate/v4/source/file"
-)
-
-func main() {
-    db, err := sql.Open("postgres", "postgres://localhost:5432/database?sslmode=enable")
-    driver, err := postgres.WithInstance(db, &postgres.Config{})
-    m, err := migrate.NewWithDatabaseInstance(
-        "file:///migrations",
-        "postgres", driver)
-    m.Up() // or m.Steps(2) if you want to explicitly set the number of migrations to run
-}
-```
-
-## Getting started
-
-Go to [getting started](GETTING_STARTED.md)
-
-## Tutorials
-
-* [CockroachDB](database/cockroachdb/TUTORIAL.md)
-* [PostgreSQL](database/postgres/TUTORIAL.md)
-
-(more tutorials to come)
-
-## Migration files
-
-Each migration has an up and down migration. [Why?](FAQ.md#why-two-separate-files-up-and-down-for-a-migration)
+### Local Development
 
 ```bash
-1481574547_create_users_table.up.sql
-1481574547_create_users_table.down.sql
+# Install dependencies
+go mod download
+
+# Run tests
+./test/run_tests.sh
+
+# Run linting
+./linting/lint.sh
+
+# Start server
+go run main.go
 ```
 
-[Best practices: How to write migrations.](MIGRATIONS.md)
+### Database Requirements
 
-## Coming from another db migration tool?
+Requires PostgreSQL with pgvector extension:
 
-Check out [migradaptor](https://github.com/musinit/migradaptor/).
-*Note: migradaptor is not affiliated or supported by this project*
+```sql
+CREATE EXTENSION IF NOT EXISTS vector;
+```
 
-## Versions
+## License
 
-Version | Supported? | Import | Notes
---------|------------|--------|------
-**master** | :white_check_mark: | `import "github.com/golang-migrate/migrate/v4"` | New features and bug fixes arrive here first |
-**v4** | :white_check_mark: | `import "github.com/golang-migrate/migrate/v4"` | Used for stable releases |
-**v3** | :x: | `import "github.com/golang-migrate/migrate"` (with package manager) or `import "gopkg.in/golang-migrate/migrate.v3"` (not recommended) | **DO NOT USE** - No longer supported |
+See [LICENSE](LICENSE) file.
 
-## Development and Contributing
 
-Yes, please! [`Makefile`](Makefile) is your friend,
-read the [development guide](CONTRIBUTING.md).
-
-Also have a look at the [FAQ](FAQ.md).
-
----
-
-Looking for alternatives? [https://awesome-go.com/#database](https://awesome-go.com/#database).
+Testing workflow

@@ -1,0 +1,50 @@
+run:
+  timeout: 5m
+  tests: false
+  skip-dirs:
+    - vendor
+    - .git
+    - test
+    - linting
+    - docs
+
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+
+issues:
+  exclude-use-default: true
+  max-issues-per-linter: 10
+  max-same-issues: 3
+  exclude-files:
+    - ".*toolchain.*"
+    - ".*golang.org/toolchain.*"
+    - "db/db.go"
+    - "db/models.go"
+    - "db/query.sql.go"
+    - "db/connection.go"
+  exclude-dirs:
+    - "golang.org/toolchain"
+
+linters:
+  disable-all: true
+  enable:
+    - gofmt
+    - goimports
+    - misspell
+    - goconst
+
+linters-settings:
+  gofmt:
+    simplify: true
+  
+  goimports:
+    local-prefixes: github.com/fain17/rag-backend
+  
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+  
+  misspell:
+    locale: US
