@@ -122,10 +122,11 @@ jobs:
       - name: Set Docker tags
         id: set-tags
         run: |
+          REPO=$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')
           if [[ "${GITHUB_REF}" == "refs/heads/develop" ]]; then
-            echo "tags=ghcr.io/${GITHUB_REPOSITORY}/rag-backend:develop-${GITHUB_SHA}" >> $GITHUB_OUTPUT
+            echo "tags=ghcr.io/${REPO}/rag-backend:develop-${GITHUB_SHA}" >> $GITHUB_OUTPUT
           else
-            echo "tags=ghcr.io/${GITHUB_REPOSITORY}/rag-backend:latest,ghcr.io/${GITHUB_REPOSITORY}/rag-backend:${GITHUB_SHA}" >> $GITHUB_OUTPUT
+            echo "tags=ghcr.io/${REPO}/rag-backend:latest,ghcr.io/${REPO}/rag-backend:${GITHUB_SHA}" >> $GITHUB_OUTPUT
           fi
 
       - name: Build and push Docker image
