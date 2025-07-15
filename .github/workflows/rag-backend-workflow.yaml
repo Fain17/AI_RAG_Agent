@@ -119,24 +119,21 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository_owner }}/rag-backend
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
+      - name: Set Docker tags
+        id: set-tags
+        run: |
+          if [[ "${GITHUB_REF}" == "refs/heads/develop" ]]; then
+            echo "tags=ghcr.io/${GITHUB_REPOSITORY}/rag-backend:develop-${GITHUB_SHA}" >> $GITHUB_OUTPUT
+          else
+            echo "tags=ghcr.io/${GITHUB_REPOSITORY}/rag-backend:latest,ghcr.io/${GITHUB_REPOSITORY}/rag-backend:${GITHUB_SHA}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: ./rag-backend
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.set-tags.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
