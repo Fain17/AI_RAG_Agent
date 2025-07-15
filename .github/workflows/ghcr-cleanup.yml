@@ -23,23 +23,39 @@ jobs:
           gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
 
       - name: Cleanup old GHCR images (keep latest 2)
-        env:
-          OWNER: ${{ github.repository_owner }}
         run: |
           set -e
-          echo "Fetching container packages for $OWNER..."
-          gh api -H "Accept: application/vnd.github+json" \
-            /users/$OWNER/packages?package_type=container | jq -r '.[].name' | while read package; do
-            echo "Processing package: $package"
+
+          OWNER="Fain17"
+
+          echo "📦 Fetching container packages for user: $OWNER"
+
+          packages=$(gh api -H "Accept: application/vnd.github+json" \
+            /users/$OWNER/packages?package_type=container | jq -r '.[].name')
+
+          if [ -z "$packages" ]; then
+            echo "❌ No packages found or failed to fetch packages. Check your GitHub token scopes (needs read:packages & delete:packages)"
+            exit 1
+          fi
+
+          for package in $packages; do
+            echo "🔄 Processing package: $package"
+
             versions=$(gh api -H "Accept: application/vnd.github+json" \
               /users/$OWNER/packages/container/$package/versions | jq -r '.[].id')
+
+            if [ -z "$versions" ]; then
+              echo "⚠️  No versions found for $package — skipping."
+              continue
+            fi
+
             count=0
             for version in $versions; do
-              count=$((count+1))
+              count=$((count + 1))
               if [ $count -le 2 ]; then
-                echo "Keeping version $version of $package"
+                echo "✅ Keeping version $version of $package"
               else
-                echo "Deleting version $version of $package"
+                echo "🗑️ Deleting version $version of $package"
                 gh api --method DELETE -H "Accept: application/vnd.github+json" \
                   /users/$OWNER/packages/container/$package/versions/$version
               fi
